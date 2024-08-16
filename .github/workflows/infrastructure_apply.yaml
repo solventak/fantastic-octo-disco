@@ -47,11 +47,11 @@ jobs:
         run: terraform plan -out=plan.out
         working-directory: ./tf
         env:
-          KUBE_CONFIG_PATH: $HOME/kubeconfig
+          KUBE_CONFIG_PATH: /home/runner/kubeconfig
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'  # Only apply changes on the main branch
         run: terraform apply -auto-approve plan.out
         working-directory: ./tf
         env:
-          KUBE_CONFIG_PATH: $HOME/kubeconfig
+          KUBE_CONFIG_PATH: /home/runner/kubeconfig
