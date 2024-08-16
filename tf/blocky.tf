@@ -86,6 +86,13 @@ resource "aws_subnet" "blockchain-explorer-subnet-1" {
     map_public_ip_on_launch = true
 }
 
+resource "aws_subnet" "blockchain-explorer-subnet-3" {
+    vpc_id = aws_vpc.blockchain-explorer.id
+    cidr_block = "10.0.3.0/24"
+    availability_zone = "us-east-1c"
+    map_public_ip_on_launch = true
+}
+
 resource "aws_subnet" "blockchain-explorer-subnet-2" {
     vpc_id = aws_vpc.blockchain-explorer.id
     cidr_block = "10.0.2.0/24"
