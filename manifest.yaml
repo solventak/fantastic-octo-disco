@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blocky-deployment
+  labels:
+    app: blocky
+spec:
+  replicas: 2  # Number of desired pods
+  selector:
+    matchLabels:
+      app: blocky
+  template:
+    metadata:
+      labels:
+        app: blocky
+    spec:
+      containers:
+        - name: blocky
+          image: alexkennedy840/blocky:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INFURA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: infura-api-key
+                  key: api_key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blocky-service
+  labels:
+    app: blocky
+spec:
+  selector:
+    app: blocky
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+# TODO: could enable SSL
+
