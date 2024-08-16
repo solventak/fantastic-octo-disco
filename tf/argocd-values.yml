@@ -26,7 +26,7 @@ server:
   ingress:
     enabled: true
     ingressClassName: nginx
-    hostname: argocd.solventdj.com
+    hostname: a84eda6df1be84aa3b7899cec1a71161-528283014.us-east-1.elb.amazonaws.com
 
 configs:
   params:
