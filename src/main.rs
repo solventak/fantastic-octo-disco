@@ -77,7 +77,7 @@ async fn main() -> Result<()> {
     struct ApiDoc;
 
     let openapi = ApiDoc::openapi();
-
+    // testing cache action
     Ok(HttpServer::new(move || {
         App::new().wrap(Logger::default())
             .service(web::scope("/api").configure(configure(client_data.clone())))
