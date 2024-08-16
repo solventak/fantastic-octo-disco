@@ -2,68 +2,66 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: grafana
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: grafana
-spec:
-  destination:
-    name: ''
-    namespace: grafana
-    server: 'https://kubernetes.default.svc'
-  source:
-    path: ''
-    repoURL: 'https://grafana.github.io/helm-charts'
-    targetRevision: 1.4.8
-    chart: k8s-monitoring
-    helm:
-      valueFiles: []
-      parameters:
-        - name: externalServices.prometheus.host
-          value: 'https://prometheus-prod-13-prod-us-east-0.grafana.net'
-        - name: externalServices.prometheus.basicAuth.username
-          value: '1742991'
-        - name: externalServices.prometheus.basicAuth.password
-          valueFrom:
-            secretKeyRef:
-              name: grafana-token
-              key: token
-        - name: externalServices.loki.host
-          value: 'https://logs-prod-006.grafana.net'
-        - name: externalServices.loki.basicAuth.username
-          value: '971219'
-        - name: externalServices.loki.basicAuth.password
-          valueFrom:
-            secretKeyRef:
-              name: grafana-token
-              key: token
-        - name: externalServices.tempo.host
-          value: 'https://tempo-prod-04-prod-us-east-0.grafana.net:443'
-        - name: externalServices.tempo.basicAuth.username
-          value: '965534'
-        - name: externalServices.tempo.basicAuth.password
-          valueFrom:
-            secretKeyRef:
-              name: grafana-token
-              key: token
-        - name: metrics.alloy.metricsTuning.useIntegrationAllowList
-          value: 'true'
-        - name: traces.enabled
-          value: 'true'
-        - name: receivers.zipkin.enabled
-          value: ''
-        - name: receivers.grafanaCloudMetrics.enabled
-          value: 'false'
-        - name: opencost.enabled
-          value: 'false'
-        - name: kube-state-metrics.enabled
-          value: 'true'
-        - name: prometheus-node-exporter.enabled
-          value: 'true'
-        - name: prometheus-operator-crds.enabled
-          value: 'true'
-        - name: kepler.enabled
-          value: 'true'
-  sources: []
-  project: default
+#---
+#apiVersion: argoproj.io/v1alpha1
+#kind: Application
+#metadata:
+#  name: grafana
+#spec:
+#  destination:
+#    name: ''
+#    namespace: grafana
+#    server: 'https://kubernetes.default.svc'
+#  source:
+#    path: ''
+#    repoURL: 'https://grafana.github.io/helm-charts'
+#    targetRevision: 1.4.8
+#    chart: k8s-monitoring
+#    helm:
+#      valueFiles: []
+#      parameters:
+#        - name: externalServices.prometheus.host
+#          value: 'https://prometheus-prod-13-prod-us-east-0.grafana.net'
+#        - name: externalServices.prometheus.basicAuth.username
+#          value: '1742991'
+#        - name: externalServices.prometheus.basicAuth.password
+#          valueFrom:
+#            secretKeyRef:
+#              name: grafana-token
+#              key: token
+#        - name: externalServices.loki.host
+#          value: 'https://logs-prod-006.grafana.net'
+#        - name: externalServices.loki.basicAuth.username
+#          value: '971219'
+#        - name: externalServices.loki.basicAuth.password
+#          valueFrom:
+#            secretKeyRef:
+#              name: grafana-token
+#              key: token
+#        - name: externalServices.tempo.host
+#          value: 'https://tempo-prod-04-prod-us-east-0.grafana.net:443'
+#        - name: externalServices.tempo.basicAuth.username
+#          value: '965534'
+#        - name: externalServices.tempo.basicAuth.password
+#          valueFrom:
+#            secretKeyRef:
+#              name: grafana-token
+#              key: token
+#        - name: metrics.alloy.metricsTuning.useIntegrationAllowList
+#          value: 'true'
+#        - name: traces.enabled
+#          value: 'true'
+#        - name: receivers.grafanaCloudMetrics.enabled
+#          value: 'false'
+#        - name: opencost.enabled
+#          value: 'false'
+#        - name: kube-state-metrics.enabled
+#          value: 'true'
+#        - name: prometheus-node-exporter.enabled
+#          value: 'true'
+#        - name: prometheus-operator-crds.enabled
+#          value: 'true'
+#        - name: kepler.enabled
+#          value: 'true'
+#  sources: []
+#  project: default
