@@ -27,6 +27,9 @@ jobs:
         with:
           push: true
           tags: alexkennedy840/blocky:latest
+          cache-from: type=registry,ref=alexkennedy840/blocky:buildcache
+          cache-to: type=registry,ref=alexkennedy840/blocky:buildcache,mode=max
+
 
       - name: Log out from Docker Hub
         run: docker logout
