@@ -31,10 +31,13 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+        working-directory: ./tf
 
       - name: Terraform Plan
         run: terraform plan -out=plan.out
+        working-directory: ./tf
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'  # Only apply changes on the main branch
         run: terraform apply -auto-approve plan.out
+        working-directory: ./tf
