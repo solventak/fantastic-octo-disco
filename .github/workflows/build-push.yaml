@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-
+# TODO: if the new image is pushed, how do we roll that out to the replicas one at a time?
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -24,6 +24,9 @@ jobs:
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: alexkennedy840/blocky:latest
 
       - name: Log out from Docker Hub
         run: docker logout
