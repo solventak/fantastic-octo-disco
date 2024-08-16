@@ -16,8 +16,8 @@ redis:
 repoServer:
   resources:
     limits:
-      cpu: "1000m"
-      memory: "512Mi"
+      cpu: "500m"
+      memory: "256Mi"
 server:
   resources:
     limits:
