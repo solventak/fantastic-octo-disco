@@ -1,0 +1,33 @@
+controller:
+  resources:
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+dex:
+  resources:
+    limits:
+      cpu: "10m"
+      memory: "32Mi"
+redis:
+  resources:
+    limits:
+      cpu: "10m"
+      memory: "32Mi"
+repoServer:
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "512Mi"
+server:
+  resources:
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hostname: argocd.solventdj.com
+
+configs:
+  params:
+    server.insecure: true
