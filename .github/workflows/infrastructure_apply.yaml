@@ -35,7 +35,9 @@ jobs:
           terraform_version: 1.4.6  # Specify the version of Terraform you want to use
 
       - name: ls \$HOME
-        run: ls $HOME
+        run: |
+          ls $HOME
+          echo $HOME
 
       - name: Terraform Init
         run: terraform init
