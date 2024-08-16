@@ -18,12 +18,12 @@ terraform {
 
 provider "helm" {
   kubernetes {
-    config_path = "./kubeconfig-eks.yaml"
+    config_path = "/home/runner/kubeconfig"
   }
 }
 
 provider "kubernetes" {
-  config_path = "./kubeconfig-eks.yaml"
+  config_path = "/home/runner/kubeconfig"
 }
 
 resource "kubernetes_namespace" "infrastructure" {
