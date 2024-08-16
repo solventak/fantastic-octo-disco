@@ -26,9 +26,8 @@ jobs:
 
       - name: Configure KUBECONFIG
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
-          export KUBECONFIG=$HOME/.kube/config
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/kubeconfig
+          export KUBECONFIG=$HOME/kubeconfig
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -43,11 +42,11 @@ jobs:
         run: terraform plan -out=plan.out
         working-directory: ./tf
         env:
-          KUBE_CONFIG_PATH: $HOME/.kube/config
+          KUBE_CONFIG_PATH: $HOME/kubeconfig
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'  # Only apply changes on the main branch
         run: terraform apply -auto-approve plan.out
         working-directory: ./tf
         env:
-          KUBE_CONFIG_PATH: $HOME/.kube/config
+          KUBE_CONFIG_PATH: $HOME/kubeconfig
