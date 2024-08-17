@@ -8,7 +8,17 @@ use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 use crate::api::InfuraClient;
 use anyhow::{Context, Result};
+use lazy_static::lazy_static;
+use prometheus::{Encoder, Gauge, labels, opts, register_gauge, TextEncoder};
 use utoipa_scalar::{Scalar, Servable};
+
+lazy_static! {
+    static ref REQUEST_LATENCY: Gauge = register_gauge!(opts!(
+        "http_request_latency",
+        "The latency of a request in ms.",
+        labels! {"handler" => "all",}
+    )).unwrap();
+}
 
 #[derive(OpenApi)]
 #[openapi(
@@ -43,11 +53,14 @@ enum ErrorResponse {
 )]
 #[get("/address/balance")]
 async fn get_wallet_balance(wallet: Json<Wallet>, infura_client: Data<InfuraClient>) -> impl Responder {
+    let start = std::time::Instant::now();
     let balance = &infura_client.get_ref().get_balance(&wallet.address).await;
     match balance {
         Ok(balance) => HttpResponse::Ok().json(WalletInfo{balance: *balance}),
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse::InternalServerError(format!("{:?}", e))),
     }
+    let end = std::time::Instant::now();
+    REQUEST_LATENCY.set((end.duration_since(start).as_millis() as f64) / 1000.);
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
@@ -82,5 +95,14 @@ async fn main() -> Result<()> {
         App::new().wrap(Logger::default())
             .service(web::scope("/api").configure(configure(client_data.clone())))
             .service(Scalar::with_url("/scalar", openapi.clone()))
+            .route("/metrics", web::get().to(|| {
+                let encoder = TextEncoder::new();
+                let metric_families = prometheus::gather();
+                let mut buffer = vec![];
+                encoder.encode(&metric_families, &mut buffer).unwrap();
+                HttpResponse::Ok()
+                    .content_type(encoder.format_type())
+                    .body(buffer)
+            }))
     }).bind((Ipv4Addr::UNSPECIFIED, 8080))?.run().await?)
 }
