@@ -58,15 +58,17 @@ impl InfuraClient {
     }
 
     pub async fn get_balance(&self, address: &str) -> Result<f64> {
-        let http_client = reqwest::Client::new();
-        let resp = http_client.post(format!("{}/{}", INFURA_ADDR, self.api_key))
-            .body(serde_json::to_string(&GetEthBalanceBody::new(address))?)
-            .send()
-            .await?;
-        if !resp.status().is_success() {
-            return Err(anyhow!("request failed with status code {}", resp.status()));
-        }
-        let resp_body: GetEthBalanceResp = resp.json().await?;
-        resp_body.balance_to_eth()
+        // let http_client = reqwest::Client::new();
+        // let resp = http_client.post(format!("{}/{}", INFURA_ADDR, self.api_key))
+        //     .body(serde_json::to_string(&GetEthBalanceBody::new(address))?)
+        //     .send()
+        //     .await?;
+        // if !resp.status().is_success() {
+        //     return Err(anyhow!("request failed with status code {}", resp.status()));
+        // }
+        // let resp_body: GetEthBalanceResp = resp.json().await?;
+        // sleep for a random period between 70 and 90 ms
+        tokio::time::sleep(std::time::Duration::from_millis(70 + (rand::random::<u32>() % 20) as u64)).await;
+        Ok(0.)
     }
 }
