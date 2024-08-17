@@ -9,7 +9,7 @@ use utoipa::{OpenApi, ToSchema};
 use crate::api::InfuraClient;
 use anyhow::{Context, Result};
 use lazy_static::lazy_static;
-use prometheus::{Encoder, Gauge, Histogram, histogram_opts, labels, linear_buckets, opts, register_gauge, register_histogram, TextEncoder};
+use prometheus::{Encoder, Gauge, Histogram, histogram_opts, linear_buckets, register_histogram, TextEncoder};
 use utoipa_scalar::{Scalar, Servable};
 
 lazy_static! {
@@ -40,6 +40,16 @@ fn configure(infura_client: Data<InfuraClient>) -> impl FnOnce(&mut ServiceConfi
 enum ErrorResponse {
     InternalServerError(String),
     BadRequest(String),
+}
+
+#[utoipa::path(
+    responses(
+        (status = 200, description = "healthy"),
+    )
+)]
+#[get("/health")]
+async fn health() -> impl Responder {
+    HttpResponse::Ok().body("healthy")
 }
 
 #[utoipa::path(
