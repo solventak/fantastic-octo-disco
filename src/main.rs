@@ -9,13 +9,14 @@ use utoipa::{OpenApi, ToSchema};
 use crate::api::InfuraClient;
 use anyhow::{Context, Result};
 use lazy_static::lazy_static;
-use prometheus::{Encoder, Gauge, Histogram, histogram_opts, labels, opts, register_gauge, register_histogram, TextEncoder};
+use prometheus::{Encoder, Gauge, Histogram, histogram_opts, labels, linear_buckets, opts, register_gauge, register_histogram, TextEncoder};
 use utoipa_scalar::{Scalar, Servable};
 
 lazy_static! {
     static ref REQUEST_LATENCY: Histogram = register_histogram!(histogram_opts!(
         "http_request_latency",
         "The latency of a request in ms.",
+        linear_buckets(0., 5., 100).unwrap(),
     )).unwrap();
 }
 
