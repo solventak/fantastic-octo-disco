@@ -60,7 +60,7 @@ async fn get_wallet_balance(wallet: Json<Wallet>, infura_client: Data<InfuraClie
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse::InternalServerError(format!("{:?}", e))),
     };
     let end = std::time::Instant::now();
-    REQUEST_LATENCY.set((end.duration_since(start).as_millis() as f64) / 1000.);
+    REQUEST_LATENCY.set(end.duration_since(start).as_millis() as f64);
     ret
 }
 
@@ -116,6 +116,6 @@ async fn main() -> Result<()> {
         App::new().wrap(Logger::default())
             .service(web::scope("/api").configure(configure(client_data.clone())))
             .service(Scalar::with_url("/scalar", openapi.clone()))
-            .route("/metrics", web::get().to(metrics))
+            .route("/metrics", web::post().to(metrics))
     }).bind((Ipv4Addr::UNSPECIFIED, 8080))?.run().await?)
 }
