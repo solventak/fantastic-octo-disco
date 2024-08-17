@@ -163,8 +163,47 @@ will restart and roll out new pods with the latest built image automatically.
 
 ## High Availability (HA) Considerations
 
+### Redundancy
+
+- [x] 2 Availability Zones (AZs)
+- [x] 2 Nodes per AZ
+- [x] Pod spread topology to distribute pods evenly across all nodes
+
+### Health Checks
+
+- [x] Blocky server includes a health check endpoint
+
+### Horizontal Scaling
+
+- [x] Managed by Kubernetes with redundancy across nodes and AZs
+
+### Failover
+
+- [x] Handled through the redundancy design
+
+### Stateless Applications
+
+- [x] Application is designed to be stateless for easier scaling and recovery
+
+### Retry Logic
+
+- [x] Implemented to handle transient failures
+
+Graceful Degradation (To Be Implemented)
+
+Serve from cache if the service goes down
+Circuit Breaker (To Be Implemented)
+
+Introduce a circuit breaker to prevent cascading failures
+
 ## Scalability Considerations
 
+- [ ] cache with redis
+
 ## Monitoring and Alerts
+
+- alerting
+- monitoring system
+  - this ties in with HA
 
 ## Contributing
