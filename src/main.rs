@@ -1,6 +1,7 @@
 mod api;
 
 use std::net::Ipv4Addr;
+use std::time::Duration;
 use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
 use actix_web::middleware::Logger;
 use actix_web::web::{Data, Json, Path, ServiceConfig};
@@ -8,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 use crate::api::InfuraClient;
 use anyhow::{Context, Result};
+use backon::{BackoffBuilder, ExponentialBackoff, ExponentialBuilder, Retry, Retryable};
 use lazy_static::lazy_static;
 use prometheus::{Encoder, Gauge, Histogram, histogram_opts, linear_buckets, register_histogram, TextEncoder};
 use utoipa_scalar::{Scalar, Servable};
@@ -32,7 +34,8 @@ fn configure(infura_client: Data<InfuraClient>) -> impl FnOnce(&mut ServiceConfi
     |config: &mut ServiceConfig| {
         config
             .app_data(infura_client)
-            .service(get_wallet_balance);
+            .service(get_wallet_balance)
+            .service(health);
     }
 }
 
@@ -63,9 +66,15 @@ async fn health() -> impl Responder {
 #[get("/address/balance/{address}")]
 async fn get_wallet_balance(address: Path<String>, infura_client: Data<InfuraClient>) -> impl Responder {
     let start = std::time::Instant::now();
-    let balance = &infura_client.get_ref().get_balance(&address).await;
+
+    // add retry
+    let api_call = || async {
+        infura_client.get_ref().get_balance(&address).await
+    };
+    let retry_strategy = ExponentialBuilder::default().with_factor(2.).with_min_delay(Duration::from_millis(100)).with_max_delay(Duration::from_secs(500)).with_max_times(4);
+    let balance = api_call.retry(&retry_strategy).await;
     let ret = match balance {
-        Ok(balance) => HttpResponse::Ok().json(WalletInfo{balance: *balance}),
+        Ok(balance) => HttpResponse::Ok().json(WalletInfo{balance}),
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse::InternalServerError(format!("{:?}", e))),
     };
     let end = std::time::Instant::now();
