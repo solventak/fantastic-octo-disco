@@ -40,7 +40,7 @@ spec:
                   key: api_key
           livenessProbe:
             httpGet:
-              path: /health
+              path: /api/health
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
