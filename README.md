@@ -107,6 +107,7 @@ flowchart TD
 	ArgoCD -->|manages and applies| EKSCluster
 	Dockerhub -->|hosts for| EKSCluster
 	Terraform -->|stores state in| S3
+	Terraform -->|bootstraps| ArgoCD
 ```
 
 In order to automate deploys of infrastructure and application code I used a combination of Terraform and ArgoCD.
@@ -125,6 +126,40 @@ prefer to have the control over the change to the application architecture. As d
 will restart and roll out new pods with the latest built image automatically.
 
 ## Security Considerations
+
+### Network and Communication Security
+- [ ] Enable SSL for all network calls
+- [ ] Security groups in AWS should be reviewed to allow minimal access across all vectors
+
+### Access Control and Identity Management
+- [ ] Add an identity provider to allow users to access the API
+- [ ] Lock down users and roles in Kubernetes to make secrets inaccessible
+- [x] ArgoCD has its own identity management but this should be locked down more
+  - I just limited it to my own IP
+- [x] Lock down the repo so only authorized people can push, since it triggers actions
+- [ ] Audit logging for access to all resources that aren't public
+
+### Secrets and Sensitive Data Management
+- [x] Avoid storing sensitive environment variables in the Docker image
+- [x] API Keys and Secrets should be managed separately
+  - Currently stored in Kubernetes secrets which were uploaded manually
+- [x] Terraform state can be sensitive, so ensure that the bucket is private
+- [x] Secrets for CI should be managed
+  - Currently stored in GitHub secrets for actions
+
+### Rate Limiting and Abuse Prevention
+- [ ] Rate limits based on IP, token, etc.
+- [ ] Blacklist for bad actors
+- [ ] Rate limits to prevent abuse
+
+### Application and Infrastructure Security
+- [ ] Application should validate input for addresses
+- [ ] Pod security policies
+- [ ] EKS cluster configuration with service accounts for pods
+- [ ] Control plane logging
+
+### Logging and Monitoring
+- [x] Check all logging and monitoring to ensure tokens are redacted or removed completely if exposed
 
 ## High Availability (HA) Considerations
 
