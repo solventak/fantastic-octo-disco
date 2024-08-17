@@ -30,7 +30,13 @@ jobs:
           cache-from: type=registry,ref=alexkennedy840/blocky:buildcache
           cache-to: type=registry,ref=alexkennedy840/blocky:buildcache,mode=max
 
-
       - name: Log out from Docker Hub
         run: docker logout
+
+      - name: Rollout restart blocky deployment
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBECONFIG }}
+        with:
+          args: rollout restart deployment blocky-deployment -n blocky
 
