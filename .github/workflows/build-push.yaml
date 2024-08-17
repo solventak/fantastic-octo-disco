@@ -37,6 +37,8 @@ jobs:
         uses: unfor19/install-aws-cli-action@v1
         with:
           version: 2.4.20
+          bindir: "/usr/local/bin"           # default
+          installrootdir: "/usr/local"       # default
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
