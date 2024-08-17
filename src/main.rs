@@ -116,6 +116,6 @@ async fn main() -> Result<()> {
         App::new().wrap(Logger::default())
             .service(web::scope("/api").configure(configure(client_data.clone())))
             .service(Scalar::with_url("/scalar", openapi.clone()))
-            .route("/metrics", web::post().to(metrics))
+            .route("/metrics", web::get().to(metrics))
     }).bind((Ipv4Addr::UNSPECIFIED, 8080))?.run().await?)
 }
