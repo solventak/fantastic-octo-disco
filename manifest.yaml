@@ -10,7 +10,7 @@ metadata:
   labels:
     app: blocky
 spec:
-  replicas: 2  # Number of desired pods
+  replicas: 7  # Number of desired pods
   selector:
     matchLabels:
       app: blocky
@@ -19,6 +19,14 @@ spec:
       labels:
         app: blocky
     spec:
+      # Configure a topology spread constraint
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: failure-domain.beta.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: blocky
       containers:
         - name: blocky
           image: alexkennedy840/blocky:latest
