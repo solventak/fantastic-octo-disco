@@ -22,7 +22,7 @@ spec:
       # Configure a topology spread constraint
       topologySpreadConstraints:
         - maxSkew: 1
-          topologyKey: failure-domain.beta.kubernetes.io/zone
+          topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: DoNotSchedule
           labelSelector:
             matchLabels:
