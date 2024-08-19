@@ -31,7 +31,7 @@ impl Cache<String, f64> for RedisCache {
     }
 
     async fn write(&mut self, key: String, val: f64) -> Result<()> {
-        self.conn.set(key, val).map_err(|e| anyhow!("failed to write to cache: {}", e))
+        self.conn.set_ex(key, val, 10).map_err(|e| anyhow!("failed to write to cache: {}", e))
     }
 }
 
