@@ -10,7 +10,7 @@ metadata:
   labels:
     app: blocky
 spec:
-  replicas: 4  # Number of desired pods
+  replicas: 5  # Number of desired pods
   selector:
     matchLabels:
       app: blocky
@@ -38,6 +38,8 @@ spec:
                 secretKeyRef:
                   name: infura-api-key
                   key: api_key
+            - name: REDIS_URL
+              value: "redis://redis-service:6379"
           livenessProbe:
             httpGet:
               path: /api/health
@@ -70,4 +72,48 @@ spec:
       targetPort: 8080
   type: LoadBalancer
 # TODO: could enable SSL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.0.0-alpine # Use the latest stable version or the version you need
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: redis
 

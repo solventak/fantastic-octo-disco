@@ -1,11 +1,90 @@
 use anyhow::{anyhow, Context, Result};
+use async_trait::async_trait;
+use redis::{Commands, RedisResult};
 use serde::{Deserialize, Serialize};
 
 static INFURA_ADDR: &str = "https://mainnet.infura.io/v3";
 
+#[async_trait]
+trait Cache<K, V>: Send + Sync {
+    async fn read(&mut self, key: K) -> Result<Option<V>>;
+    async fn write(&mut self, key: K, val: V) -> Result<()>;
+}
+
+struct RedisCache {
+    client: redis::Client,
+    conn: redis::Connection,
+}
+
+impl RedisCache {
+    pub fn new(conn_addr: &str) -> Result<Self> {
+        let client = redis::Client::open(conn_addr)?;
+        let connection = client.get_connection()?;
+        Ok(RedisCache { client, conn: connection })
+    }
+}
+
+#[async_trait]
+impl Cache<String, f64> for RedisCache {
+    async fn read(&mut self, key: String) -> Result<Option<f64>> {
+        self.conn.get(key).map_err(|e| anyhow!("failed to read from cache: {}", e))
+    }
+
+    async fn write(&mut self, key: String, val: f64) -> Result<()> {
+        self.conn.set(key, val).map_err(|e| anyhow!("failed to write to cache: {}", e))
+    }
+}
+
 pub struct InfuraClient{
     api_key: String,
+    cache: Option<Box<dyn Cache<String, f64>>>,
 }
+
+impl InfuraClient {
+    pub fn new() -> Result<InfuraClient> {
+        let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://redis-service:6379".to_string());
+        let cache = match RedisCache::new(redis_url.as_str()) {
+            Ok(cache) => {
+                let c: Option<Box<dyn Cache<String, f64>>> = Some(Box::new(cache));
+                c
+            },
+            Err(e) => {
+                eprintln!("Failed to connect to redis: {}", e);
+                None
+            }
+        };
+        Ok(InfuraClient {
+            api_key: std::env::var("INFURA_API_KEY").with_context(|| "couldn't get API key from environment")?,
+            cache,
+        })
+    }
+
+    pub async fn get_balance(&mut self, address: &str) -> Result<f64> {
+        // try the cache first
+        if let Some(cache) = &mut self.cache {
+            if let Some(balance) = cache.read(address.to_string()).await? {
+                return Ok(balance);
+            }
+        }
+
+        let http_client = reqwest::Client::new();
+        let resp = http_client.post(format!("{}/{}", INFURA_ADDR, self.api_key))
+            .body(serde_json::to_string(&GetEthBalanceBody::new(address))?)
+            .send()
+            .await?;
+        if !resp.status().is_success() {
+            return Err(anyhow!("request failed with status code {}", resp.status()));
+        }
+        let resp_body: GetEthBalanceResp = resp.json().await?;
+
+        if let Some(cache) = &mut self.cache {
+            cache.write(address.to_string(), resp_body.balance_to_eth()?).await?;
+        }
+
+        Ok(resp_body.balance_to_eth()?)
+    }
+}
+
 
 #[derive(Serialize)]
 struct GetEthBalanceBody {
@@ -47,28 +126,5 @@ impl GetEthBalanceResp {
                 }
             }
         }
-    }
-}
-
-impl InfuraClient {
-    pub fn new() -> Result<InfuraClient> {
-        Ok(InfuraClient {
-            api_key: std::env::var("INFURA_API_KEY").with_context(|| "couldn't get API key from environment")?,
-        })
-    }
-
-    pub async fn get_balance(&self, address: &str) -> Result<f64> {
-        let http_client = reqwest::Client::new();
-        let resp = http_client.post(format!("{}/{}", INFURA_ADDR, self.api_key))
-            .body(serde_json::to_string(&GetEthBalanceBody::new(address))?)
-            .send()
-            .await?;
-        if !resp.status().is_success() {
-            return Err(anyhow!("request failed with status code {}", resp.status()));
-        }
-        let resp_body: GetEthBalanceResp = resp.json().await?;
-        // sleep for a random period between 70 and 90 ms
-        // tokio::time::sleep(std::time::Duration::from_millis(70 + (rand::random::<u32>() % 20) as u64)).await;
-        Ok(resp_body.balance_to_eth()?)
     }
 }
