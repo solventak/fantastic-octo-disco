@@ -12,6 +12,7 @@ use anyhow::{Context, Result};
 use backon::{BackoffBuilder, ExponentialBackoff, ExponentialBuilder, Retry, Retryable};
 use lazy_static::lazy_static;
 use prometheus::{Encoder, Gauge, Histogram, histogram_opts, linear_buckets, register_histogram, TextEncoder};
+use tokio::sync::Mutex;
 use utoipa_scalar::{Scalar, Servable};
 
 lazy_static! {
@@ -30,7 +31,7 @@ lazy_static! {
 )]
 struct BalanceApi;
 
-fn configure(infura_client: Data<InfuraClient>) -> impl FnOnce(&mut ServiceConfig) {
+fn configure(infura_client: Data<Mutex<InfuraClient>>) -> impl FnOnce(&mut ServiceConfig) {
     |config: &mut ServiceConfig| {
         config
             .app_data(infura_client)
@@ -64,12 +65,12 @@ async fn health() -> impl Responder {
     )
 )]
 #[get("/address/balance/{address}")]
-async fn get_wallet_balance(address: Path<String>, infura_client: Data<InfuraClient>) -> impl Responder {
+async fn get_wallet_balance(address: Path<String>, infura_client: Data<Mutex<InfuraClient>>) -> impl Responder {
     let start = std::time::Instant::now();
 
     // add retry
     let api_call = || async {
-        infura_client.get_ref().get_balance(&address).await
+        infura_client.lock().await.get_balance(&address).await
     };
     let retry_strategy = ExponentialBuilder::default().with_factor(2.).with_min_delay(Duration::from_millis(100)).with_max_delay(Duration::from_secs(500)).with_max_times(4);
     let balance = api_call.retry(&retry_strategy).await;
@@ -110,7 +111,7 @@ async fn metrics() -> impl Responder {
 #[actix_web::main]
 async fn main() -> Result<()> {
     let infura_client = InfuraClient::new().with_context(|| "couldn't get a connection to the infura API")?;
-    let client_data = Data::new(infura_client);
+    let client_data = Data::new(Mutex::new(infura_client));
 
     #[derive(OpenApi)]
     #[openapi(
