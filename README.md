@@ -11,6 +11,7 @@ Using the following technologies:
 - ArgoCD
 - Kubernetes
 - EKS
+- Grafana Cloud
 
 ## Requirements
 
