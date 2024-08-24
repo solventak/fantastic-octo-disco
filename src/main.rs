@@ -58,7 +58,7 @@ enum ErrorResponse {
 )]
 #[get("/health")]
 async fn health() -> impl Responder {
-    REQUEST_COUNT.inc()
+    REQUEST_COUNT.inc();
     HttpResponse::Ok().body("healthy")
 }
 
