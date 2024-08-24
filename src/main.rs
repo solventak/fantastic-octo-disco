@@ -4,14 +4,14 @@ use std::net::Ipv4Addr;
 use std::time::Duration;
 use actix_web::{App, get, HttpResponse, HttpServer, Responder, web};
 use actix_web::middleware::Logger;
-use actix_web::web::{Data, Json, Path, ServiceConfig};
+use actix_web::web::{Data, Path, ServiceConfig};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 use crate::api::InfuraClient;
 use anyhow::{Context, Result};
-use backon::{BackoffBuilder, ExponentialBackoff, ExponentialBuilder, Retry, Retryable};
+use backon::{ExponentialBuilder, Retryable};
 use lazy_static::lazy_static;
-use prometheus::{Encoder, Gauge, Histogram, histogram_opts, linear_buckets, register_histogram, TextEncoder};
+use prometheus::{Counter, Encoder, Histogram, histogram_opts, linear_buckets, register_histogram, register_counter, TextEncoder, opts};
 use tokio::sync::Mutex;
 use utoipa_scalar::{Scalar, Servable};
 
@@ -20,6 +20,11 @@ lazy_static! {
         "http_request_latency",
         "The latency of a request in ms.",
         linear_buckets(0., 5., 100).unwrap(),
+    )).unwrap();
+
+    static ref REQUEST_COUNT: Counter = register_counter!(opts!(
+        "http_request_count",
+        "The number of requests.",
     )).unwrap();
 }
 
@@ -79,6 +84,7 @@ async fn get_wallet_balance(address: Path<String>, infura_client: Data<Mutex<Inf
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse::InternalServerError(format!("{:?}", e))),
     };
     let end = std::time::Instant::now();
+    REQUEST_COUNT.inc();
     REQUEST_LATENCY.observe(end.duration_since(start).as_millis() as f64);
     ret
 }
