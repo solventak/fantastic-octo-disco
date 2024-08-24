@@ -9,6 +9,10 @@ metadata:
   name: blocky-deployment
   labels:
     app: blocky
+  annotations:
+    prometheus.io/scrape: "true"       # Enable scraping for this pod
+    prometheus.io/path: "/metrics"     # Path to scrape metrics from (default is /metrics)
+    prometheus.io/port: "80"
 spec:
   replicas: 5  # Number of desired pods
   selector:
