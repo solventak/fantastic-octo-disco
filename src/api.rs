@@ -4,6 +4,7 @@ use redis::{Commands, RedisResult};
 use serde::{Deserialize, Serialize};
 
 static INFURA_ADDR: &str = "https://mainnet.infura.io/v3";
+static CACHE_TTL: usize = 10;
 
 #[async_trait]
 trait Cache<K, V>: Send + Sync {
@@ -31,7 +32,7 @@ impl Cache<String, f64> for RedisCache {
     }
 
     async fn write(&mut self, key: String, val: f64) -> Result<()> {
-        self.conn.set_ex(key, val, 10).map_err(|e| anyhow!("failed to write to cache: {}", e))
+        self.conn.set_ex(key, val, CACHE_TTL).map_err(|e| anyhow!("failed to write to cache: {}", e))
     }
 }
 
