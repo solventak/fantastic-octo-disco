@@ -10,7 +10,7 @@ metadata:
   labels:
     app: blocky
 spec:
-  replicas: 5  # Number of desired pods
+  replicas: 8  # Number of desired pods
   selector:
     matchLabels:
       app: blocky
