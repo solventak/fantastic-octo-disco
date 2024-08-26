@@ -82,7 +82,7 @@ impl InfuraClient {
                 return Ok(balance);
             }
         }
-
+        API_ENDPOINT_REQUEST_COUNT_METRIC.inc();
         let http_client = reqwest::Client::new();
         let resp = http_client.post(format!("{}/{}", INFURA_ADDR, self.api_key))
             .body(serde_json::to_string(&GetEthBalanceBody::new(address))?)
@@ -92,7 +92,6 @@ impl InfuraClient {
             return Err(anyhow!("request failed with status code {}", resp.status()));
         }
         let resp_body: GetEthBalanceResp = resp.json().await?;
-        API_ENDPOINT_REQUEST_COUNT_METRIC.inc();
 
         if let Some(cache) = &mut self.cache {
             cache.write(address.to_string(), resp_body.balance_to_eth()?).await?;
