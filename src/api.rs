@@ -1,10 +1,24 @@
 use anyhow::{anyhow, Context, Result};
 use async_trait::async_trait;
-use redis::{Commands, RedisResult};
+use lazy_static::lazy_static;
+use prometheus::{Counter, opts, register_counter};
+use redis::Commands;
 use serde::{Deserialize, Serialize};
 
 static INFURA_ADDR: &str = "https://mainnet.infura.io/v3";
 static CACHE_TTL: usize = 10;
+
+lazy_static! {
+    static ref CACHE_HIT_COUNT_METRIC: Counter = register_counter!(opts!(
+        "cache_hit_count",
+        "The number of cache hits.",
+    )).unwrap();
+
+    static ref API_ENDPOINT_REQUEST_COUNT_METRIC: Counter = register_counter!(opts!(
+        "number of times the API endpoint was hit",
+        "Number of times the Infura API was requested.",
+    )).unwrap();
+}
 
 #[async_trait]
 trait Cache<K, V>: Send + Sync {
@@ -64,6 +78,7 @@ impl InfuraClient {
         // try the cache first
         if let Some(cache) = &mut self.cache {
             if let Some(balance) = cache.read(address.to_string()).await? {
+                CACHE_HIT_COUNT_METRIC.inc();
                 return Ok(balance);
             }
         }
@@ -77,6 +92,7 @@ impl InfuraClient {
             return Err(anyhow!("request failed with status code {}", resp.status()));
         }
         let resp_body: GetEthBalanceResp = resp.json().await?;
+        API_ENDPOINT_REQUEST_COUNT_METRIC.inc();
 
         if let Some(cache) = &mut self.cache {
             cache.write(address.to_string(), resp_body.balance_to_eth()?).await?;
