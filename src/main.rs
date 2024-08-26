@@ -19,7 +19,7 @@ lazy_static! {
     static ref REQUEST_LATENCY: Histogram = register_histogram!(histogram_opts!(
         "http_request_latency",
         "The latency of a request in ms.",
-        linear_buckets(0., 5., 100).unwrap(),
+        linear_buckets(0., 5., 200).unwrap(),
     )).unwrap();
 
     static ref REQUEST_COUNT: Counter = register_counter!(opts!(
