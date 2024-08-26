@@ -18,8 +18,8 @@ use utoipa_scalar::{Scalar, Servable};
 lazy_static! {
     static ref REQUEST_LATENCY: Histogram = register_histogram!(histogram_opts!(
         "http_request_latency",
-        "The latency of a request in ms.",
-        linear_buckets(0., 0.01, 100).unwrap(),
+        "The latency of a request in us.",
+        linear_buckets(0., 100., 10).unwrap(),
     )).unwrap();
 
     static ref REQUEST_COUNT: Counter = register_counter!(opts!(
@@ -86,7 +86,7 @@ async fn get_wallet_balance(address: Path<String>, infura_client: Data<Mutex<Inf
     };
     let end = std::time::Instant::now();
     REQUEST_COUNT.inc();
-    REQUEST_LATENCY.observe(end.duration_since(start).as_millis() as f64);
+    REQUEST_LATENCY.observe(end.duration_since(start).as_micros() as f64);
     ret
 }
 
