@@ -15,7 +15,7 @@ lazy_static! {
     )).unwrap();
 
     static ref API_ENDPOINT_REQUEST_COUNT_METRIC: Counter = register_counter!(opts!(
-        "number of times the API endpoint was hit",
+        "api_endpoint_request_count",
         "Number of times the Infura API was requested.",
     )).unwrap();
 }
