@@ -11,7 +11,7 @@ use crate::api::InfuraClient;
 use anyhow::{Context, Result};
 use backon::{ExponentialBuilder, Retryable};
 use lazy_static::lazy_static;
-use prometheus::{Counter, Encoder, Histogram, histogram_opts, linear_buckets, register_histogram, register_counter, TextEncoder, opts};
+use prometheus::{Counter, Encoder, Histogram, histogram_opts, linear_buckets, register_histogram, register_counter, TextEncoder, opts, register_counter_vec, labels, CounterVec};
 use tokio::sync::Mutex;
 use utoipa_scalar::{Scalar, Servable};
 
@@ -22,10 +22,10 @@ lazy_static! {
         linear_buckets(0., 100., 10).unwrap(),
     )).unwrap();
 
-    static ref REQUEST_COUNT: Counter = register_counter!(opts!(
+    static ref REQUEST_COUNT: CounterVec = register_counter_vec!(opts!(
         "http_request_count",
         "The number of requests.",
-    )).unwrap();
+    ),&["request_code"]).unwrap();
 }
 
 #[derive(OpenApi)]
@@ -58,7 +58,7 @@ enum ErrorResponse {
 )]
 #[get("/health")]
 async fn health() -> impl Responder {
-    REQUEST_COUNT.inc();
+    REQUEST_COUNT.with_label_values(&["200"]).inc();
     HttpResponse::Ok().body("healthy")
 }
 
@@ -85,7 +85,7 @@ async fn get_wallet_balance(address: Path<String>, infura_client: Data<Mutex<Inf
         Err(e) => HttpResponse::InternalServerError().json(ErrorResponse::InternalServerError(format!("{:?}", e))),
     };
     let end = std::time::Instant::now();
-    REQUEST_COUNT.inc();
+    REQUEST_COUNT.with_label_values(&[ret.status().as_str()]).inc();
     REQUEST_LATENCY.observe(end.duration_since(start).as_micros() as f64);
     ret
 }
