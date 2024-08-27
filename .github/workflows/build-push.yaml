@@ -87,5 +87,5 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
         with:
-          args: rollout restart deployment blocky-deployment -n firehose
+          args: rollout restart deployment firehose-deployment -n firehose
 
