@@ -26,7 +26,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          working-directory: ./api
+          context: api
           tags: alexkennedy840/blocky:latest
           cache-from: type=registry,ref=alexkennedy840/blocky:buildcache
           cache-to: type=registry,ref=alexkennedy840/blocky:buildcache,mode=max
@@ -67,8 +67,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          working-directory: ./firehose
           tags: alexkennedy840/firehose:latest
+          context: firehose
           cache-from: type=registry,ref=alexkennedy840/firehose:buildcache
           cache-to: type=registry,ref=alexkennedy840/firehose:buildcache,mode=max
 
