@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 
 lazy_static!{
     static ref REQUEST_LATENCY: Histogram = register_histogram!(histogram_opts!(
-        "http_request_latency",
+        "client_http_request_latency",
         "The latency of a request in ms.",
         linear_buckets(0., 1000., 15).unwrap(),
     )).unwrap();
@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
             tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         }
     });
-    
+
     Ok(HttpServer::new(move || {
         App::new().wrap(Logger::default())
             .route("/metrics", web::get().to(metrics))
