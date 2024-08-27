@@ -4,13 +4,13 @@ FROM rust:latest as builder
 WORKDIR /blocky
 
 # Copy the Cargo.toml and Cargo.lock files
-COPY ./Cargo.toml ./
+COPY Cargo.toml ./
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 RUN cargo build --release
 RUN rm src/*.rs
 
 # Copy the source code
-COPY ./src src
+COPY src src
 
 # add this here so that we "touch" main.rs and do a rebuild when needed
 RUN cat src/main.rs > src/main2.rs

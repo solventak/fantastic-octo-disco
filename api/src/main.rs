@@ -11,7 +11,7 @@ use crate::api::InfuraClient;
 use anyhow::{Context, Result};
 use backon::{ExponentialBuilder, Retryable};
 use lazy_static::lazy_static;
-use prometheus::{Counter, Encoder, Histogram, histogram_opts, linear_buckets, register_histogram, register_counter, TextEncoder, opts, register_counter_vec, labels, CounterVec};
+use prometheus::{Encoder, Histogram, histogram_opts, linear_buckets, register_histogram, register_counter, TextEncoder, opts, register_counter_vec, labels, CounterVec};
 use tokio::sync::Mutex;
 use utoipa_scalar::{Scalar, Servable};
 
