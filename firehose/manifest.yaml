@@ -23,5 +23,7 @@ spec:
           ports:
             - containerPort: 80
           env:
-            REQUEST_ENDPOINT: "http://api.solventdj.com/api/health"
-            REQUEST_FREQUENCY: 1
+            - name: REQUEST_ENDPOINT
+              value: "http://api.solventdj.com/api/health"
+            - name: REQUEST_FREQUENCY
+              value: "1"
