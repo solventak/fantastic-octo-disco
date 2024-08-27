@@ -16,12 +16,12 @@ spec:
         prometheus.io/scrape: "true"       # Enable scraping for this pod
         prometheus.io/path: "/metrics"     # Path to scrape metrics from (default is /metrics)
         prometheus.io/port: "80"
-      spec:
-        containers:
-          - name: firehose
-            image: alexkennedy840/firehose:latest
-            ports:
-              - containerPort: 80
-            env:
-              REQUEST_ENDPOINT: "http://api.solventdj.com/api/health"
-              REQUEST_FREQUENCY: 1
+    spec:
+      containers:
+        - name: firehose
+          image: alexkennedy840/firehose:latest
+          ports:
+            - containerPort: 80
+          env:
+            REQUEST_ENDPOINT: "http://api.solventdj.com/api/health"
+            REQUEST_FREQUENCY: 1
