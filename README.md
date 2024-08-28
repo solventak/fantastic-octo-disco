@@ -203,50 +203,5 @@ Introduce a circuit breaker to prevent cascading failures
 
 ## Monitoring and Alerts
 
-## Monitoring
+<img width="1167" alt="image" src="https://github.com/user-attachments/assets/ae15695a-161e-4ae8-9bfa-588e1dffaac3">
 
-### Service Level Indicators (SLIs) and Service Level Objectives (SLOs)
-
-**1. Request Latency**
-- **Objective**: Requests should have a latency under 100ms.
-- **Details**: Latency is better understood as a distribution rather than a simple average. Prefer measuring percentiles (e.g., p95, p99) over the mean to capture performance under typical and peak conditions.
-
-**2. Error Rate**
-- **Objective**: TBD (To be defined based on project-specific needs).
-- **Details**: A common approach is to measure the fraction of HTTP 500 responses relative to all requests. This indicator helps identify critical errors impacting user experience.
-
-**3. System Throughput**
-- **Objective**: 50k queries / second
-- **Details**: Compare throughput and latency together to assess how increased load affects response times.
-
-**4. Availability**
-- **Objective**: Aim for service availability over 99.5%, though this target may not be stringent for all projects.
-- **Details**: Availability is often defined as the percentage of well-formed requests that succeed. This can also be referred to as "yield."
-
-### Best Practices
-
-- **Standardization**: Ensure consistency across indicators by standardizing:
-  - Frequency of measurements.
-  - Aggregation regions and intervals.
-  - Inclusion criteria for requests.
-  - Methods of data acquisition.
-  - Data access latency.
-
-- **Objective-Driven Monitoring**: Work backward from your objectives to define relevant indicators. This approach ensures your monitoring aligns with business goals.
-
-- **Alerting**: Base alerts on SLOs rather than raw indicators to reduce noise and focus on meaningful deviations.
-
-- **SLO Strategy**:
-  - Minimize the number of SLOs to reduce complexity.
-  - Maintain a tighter internal SLO compared to what is advertised to users, providing a buffer for maintaining service quality.
-
-### The Four Golden Signals
-1. **Latency**
-2. **Traffic**
-3. **Errors**
-4. **Saturation**
-
-These signals are critical for understanding and maintaining the overall health of the system.
-
-
-## Contributing
