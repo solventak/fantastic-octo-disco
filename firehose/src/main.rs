@@ -1,7 +1,7 @@
 use std::net::Ipv4Addr;
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use actix_web::middleware::Logger;
-use prometheus::{CounterVec, Encoder, Histogram, histogram_opts, linear_buckets, register_counter, register_counter_vec, register_histogram, TextEncoder};
+use prometheus::{opts, CounterVec, Encoder, Histogram, histogram_opts, linear_buckets, register_counter, register_counter_vec, register_histogram, TextEncoder};
 use anyhow::Result;
 use lazy_static::lazy_static;
 
