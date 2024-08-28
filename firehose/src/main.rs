@@ -47,11 +47,17 @@ async fn make_health_request() {
     let end_time = chrono::Utc::now();
     let duration = end_time - start_time;
     let latency = duration.num_milliseconds();
-    if let Ok(response) = resp_res {
-        let status_str = String::from(response.status().as_str());
-        REQUEST_COUNT.with_label_values(&[status_str.as_str()]).inc();
-        REQUEST_LATENCY.with_label_values(&[status_str.as_str()]).observe(latency as f64);
-    }
+    let mut status_code: String;
+    let status_code = match resp_res {
+        Ok(response) => {
+            String::from(response.status().as_str())
+        }
+        Err(_) => {
+            String::from("500")
+        }
+    };
+    REQUEST_COUNT.with_label_values(&[status_code.as_str()]).inc();
+    REQUEST_LATENCY.with_label_values(&[status_code.as_str()]).observe(latency as f64);
     println!("Health check took {} ms", latency);
 }
 
