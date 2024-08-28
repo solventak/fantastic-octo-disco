@@ -41,6 +41,7 @@ fn configure(infura_client: Data<Mutex<InfuraClient>>) -> impl FnOnce(&mut Servi
         config
             .app_data(infura_client)
             .service(get_wallet_balance)
+            .service(get_transaction)
             .service(health);
     }
 }
