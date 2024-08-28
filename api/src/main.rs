@@ -90,6 +90,14 @@ async fn get_wallet_balance(address: Path<String>, infura_client: Data<Mutex<Inf
     ret
 }
 
+#[utoipa::path(
+    request_body = Wallet,
+)]
+#[get("/transaction/{transaction_hash}")]
+async fn get_transaction(transaction_hash: Path<String>, infura_client: Data<Mutex<InfuraClient>>) -> impl Responder {
+    return HttpResponse::Ok().json(infura_client.lock().await.get_transaction(&transaction_hash).await.unwrap());
+}
+
 #[derive(Serialize)]
 struct WalletInfo {
     balance: f64,

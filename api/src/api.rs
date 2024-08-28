@@ -85,7 +85,7 @@ impl InfuraClient {
         API_ENDPOINT_REQUEST_COUNT_METRIC.inc();
         let http_client = reqwest::Client::new();
         let resp = http_client.post(format!("{}/{}", INFURA_ADDR, self.api_key))
-            .body(serde_json::to_string(&GetEthBalanceBody::new(address))?)
+            .body(serde_json::to_string(&GetRpcRequestBody::new(address, "eth_getBalance"))?)
             .send()
             .await?;
         if !resp.status().is_success() {
@@ -99,22 +99,35 @@ impl InfuraClient {
 
         Ok(resp_body.balance_to_eth()?)
     }
+
+    pub async fn get_transaction(&mut self, transaction_hash: &str) -> Result<f64> {
+        let http_client = reqwest::Client::new();
+        let resp = http_client.post(format!("{}/{}", INFURA_ADDR, self.api_key))
+            .body(serde_json::to_string(&GetRpcRequestBody::new(transaction_hash, "eth_getTransactionByHash"))?)
+            .send()
+            .await?;
+        if !resp.status().is_success() {
+            return Err(anyhow!("request failed with status code {}", resp.status()));
+        }
+        // let resp_body = resp.json().await;
+        Ok(0.)
+    }
 }
 
 
 #[derive(Serialize)]
-struct GetEthBalanceBody {
+struct GetRpcRequestBody {
     jsonrpc: String,
     method: String,
     params: Vec<String>,
     id: i32,
 }
 
-impl GetEthBalanceBody {
-    pub fn new(address: &str) -> GetEthBalanceBody {
-        GetEthBalanceBody {
+impl GetRpcRequestBody {
+    pub fn new(address: &str, method: &str) -> GetRpcRequestBody {
+        GetRpcRequestBody {
             jsonrpc: "2.0".to_string(),
-            method: "eth_getBalance".to_string(),
+            method: method.to_string(),
             params: vec![address.to_string(), "latest".to_string()],
             id: 1,
         }
