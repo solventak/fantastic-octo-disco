@@ -1,16 +1,16 @@
 use std::net::Ipv4Addr;
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use actix_web::middleware::Logger;
-use prometheus::{opts, CounterVec, Encoder, Histogram, histogram_opts, linear_buckets, register_counter, register_counter_vec, register_histogram, TextEncoder};
+use prometheus::{opts, CounterVec, Encoder, Histogram, histogram_opts, linear_buckets, register_counter, register_counter_vec, register_histogram, TextEncoder, HistogramVec, register_histogram_vec};
 use anyhow::Result;
 use lazy_static::lazy_static;
 
 lazy_static!{
-    static ref REQUEST_LATENCY: Histogram = register_histogram!(histogram_opts!(
+    static ref REQUEST_LATENCY: HistogramVec = register_histogram_vec!(histogram_opts!(
         "client_http_request_latency",
         "The latency of a request in ms.",
         linear_buckets(0., 50., 10).unwrap(),
-    )).unwrap();
+    ), &["status_code"]).unwrap();
 
     static ref REQUEST_COUNT: CounterVec = register_counter_vec!(opts!(
         "client_api_request_count",
@@ -47,9 +47,10 @@ async fn make_health_request() {
     let end_time = chrono::Utc::now();
     let duration = end_time - start_time;
     let latency = duration.num_milliseconds();
-    REQUEST_LATENCY.observe(latency as f64);
     if let Ok(response) = resp_res {
-        REQUEST_COUNT.with_label_values(&[response.status().as_str()]).inc();
+        let status_str = String::from(response.status().as_str());
+        REQUEST_COUNT.with_label_values(&[status_str.as_str()]).inc();
+        REQUEST_LATENCY.with_label_values(&[status_str.as_str()]).observe(latency as f64);
     }
     println!("Health check took {} ms", latency);
 }
