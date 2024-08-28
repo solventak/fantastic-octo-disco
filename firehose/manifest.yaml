@@ -5,6 +5,7 @@ metadata:
   labels:
     app: firehose
 spec:
+  replicas: 2  # add this so we don't lose client-side metrics while deploying
   selector:
     matchLabels:
       app: firehose
