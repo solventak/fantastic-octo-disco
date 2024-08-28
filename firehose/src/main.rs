@@ -1,7 +1,7 @@
 use std::net::Ipv4Addr;
 use actix_web::{App, HttpResponse, HttpServer, Responder, web};
 use actix_web::middleware::Logger;
-use prometheus::{Encoder, Histogram, histogram_opts, linear_buckets, register_histogram, TextEncoder};
+use prometheus::{CounterVec, Encoder, Histogram, histogram_opts, linear_buckets, register_counter, register_counter_vec, register_histogram, TextEncoder};
 use anyhow::Result;
 use lazy_static::lazy_static;
 
@@ -11,6 +11,11 @@ lazy_static!{
         "The latency of a request in ms.",
         linear_buckets(0., 50., 10).unwrap(),
     )).unwrap();
+
+    static ref REQUEST_COUNT: CounterVec = register_counter_vec!(opts!(
+        "client_api_request_count",
+        "Counter for number of requests.",
+    ), &["status_code"]).unwrap();
 }
 
 async fn metrics() -> impl Responder {
@@ -37,12 +42,15 @@ async fn make_health_request() {
     let start_time = chrono::Utc::now();
 
     // make a request to the health endpoint
-    let _ = reqwest::get("http://api.solventdj.com/api/health").await;
+    let resp_res = reqwest::get("http://api.solventdj.com/api/health").await;
 
     let end_time = chrono::Utc::now();
     let duration = end_time - start_time;
     let latency = duration.num_milliseconds();
     REQUEST_LATENCY.observe(latency as f64);
+    if let Ok(response) = resp_res {
+        REQUEST_COUNT.with_label_values(&[response.status().as_str()]).inc();
+    }
     println!("Health check took {} ms", latency);
 }
 
